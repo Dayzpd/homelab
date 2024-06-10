@@ -1,6 +1,6 @@
 ## Add dedicated user and token
 
-We'll add a dedicated user `capmox` and assign it `PVEDatastoreAdmin`, `PVESDNUser`, and `PVEVMAdmin` roles:
+We'll add a dedicated user `capmox` and assign it `PVEDatastoreAdmin`, `PVESDNUser`, `PVESysAdmin`, and `PVEVMAdmin` roles:
 
 *Note: Some capmox docs *
 
@@ -8,6 +8,7 @@ We'll add a dedicated user `capmox` and assign it `PVEDatastoreAdmin`, `PVESDNUs
 pveum user add capmox@pve
 pveum aclmod / -user capmox@pve -role PVEDatastoreAdmin
 pveum aclmod / -user capmox@pve -role PVESDNUser
+pveum aclmod / -user capmox@pve -role PVESysAdmin
 pveum aclmod / -user capmox@pve -role PVEVMAdmin
 pveum user token add capmox@pve capi -privsep 0
 ```
@@ -64,12 +65,14 @@ Fastest way is to spin up an ubuntu vm with microk8s installed.
 
 You'll have to swap out things like hostnames/users/etc.
 
-SSH into the new ubuntu vm running microk8s and add your user to the microk8s group:
+SSH into the new ubuntu vm running microk8s and add your user to the microk8s group.
+
+*Note: I named the default user `capmox`.*
 
 ```bash
-sudo usermod -a -G microk8s capi
+sudo usermod -a -G microk8s capmox
 mkdir ~/.kube
-sudo chown -R capi ~/.kube
+sudo chown -R capmox ~/.kube
 microk8s config > ~/.kube/config
 exit
 ```
@@ -77,7 +80,7 @@ exit
 Then copy over the kubeconfig file to local machine via scp:
 
 ```bash
-scp capi@home-capi.local.zachary.day:/home/capi/.kube/config ./kubeconfig
+scp capmox@capmox.local.zachary.day:/home/capmox/.kube/config ./kubeconfig
 ```
 
 Afterwards, I would recommend changing the cluster & context name in the copied kubeconfig file.
@@ -148,11 +151,37 @@ clusterctl init --infrastructure proxmox --ipam in-cluster --core cluster-api:v1
 ## Create Workload Cluster
 
 ```bash
-clusterctl generate cluster proxmox-quickstart \
+clusterctl generate cluster homelab \
   --config ./clusterctl.yaml \
   --infrastructure proxmox \
-  --kubernetes-version v1.30.1 \
+  --kubernetes-version v1.28.9 \
   --control-plane-machine-count 1 \
-  --worker-machine-count 3 \
-  --list-variables
+  --worker-machine-count 3 > cluster.yaml
+
+k apply -f ./cluster.yaml
 ```
+
+After waiting for the control plane and workers to be created (takes ~10min),
+verify the cluster by running: 
+
+```bash
+clusterctl describe cluster homelab
+```
+
+The expected output should look like:
+
+```bash
+❯ clusterctl describe cluster homelab
+NAME                                                        READY  SEVERITY  REASON                       SINCE  MESSAGE                                                           
+Cluster/homelab                                             True                                          65m                                                                       
+├─ClusterInfrastructure - ProxmoxCluster/homelab            True                                          68m                                                                       
+├─ControlPlane - KubeadmControlPlane/homelab-control-plane  True                                          65m                                                                       
+│ └─Machine/homelab-control-plane-4hr78                     True                                          65m                                                                       
+└─Workers                                                                                                                                                                           
+  └─MachineDeployment/homelab-workers                       False  Warning   WaitingForAvailableMachines  68m    Minimum availability requires 3 replicas, current 0 available      
+    └─3 Machines...                                         True                                          61m    See homelab-workers-8pbqb-gnf7d, homelab-workers-8pbqb-xlb7c, ...  
+```
+
+You'll notice that the workers aren't ready with the stated reason being `WaitingForAvailableMachines`.
+
+To resolve this, we'll need to install a CNI.
