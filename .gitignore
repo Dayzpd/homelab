@@ -1,2 +1,4 @@
+.trash/
 pki/*
-.env
+**/*.env
+cloudflare-secret.yaml

@@ -262,9 +262,10 @@ metadata:
   name: ${CLUSTER_NAME}-crs-0
   namespace: '${NAMESPACE}'
 spec:
+  strategy: Reconcile
   clusterSelector:
     matchLabels:
       cluster.x-k8s.io/cluster-name: '${CLUSTER_NAME}'
   resources:
     - kind: ConfigMap
-      name: calico 
+      name: calico
