@@ -95,12 +95,19 @@ get-capmox-kube-dashboard-token:
 .PHONY: bootstrap-homelab-cluster
 bootstrap-homelab-cluster:
 	@kubectl config use-context homelab-admin@homelab
-	@kubectl create secret generic flux-github-auth \
+	@kubectl create secret generic github-auth \
 		--namespace flux-system \
 		--from-literal=username=${GITHUB_USER} \
 		--from-literal=password=${GITHUB_TOKEN}
-	@flux create source git <source-name> \
+	@flux create source git homelab-repo \
+		--namespace flux-system \
 		--url=https://github.com/Dayzpd/homelab.git \
 		--branch=master \
-		--secret-ref=flux-github-auth \
+		--secret-ref=github-auth \
 		--interval=1m
+	@flux create kustomization homelab-cluster \
+		--namespace flux-system \
+		--source=homelab-repo \
+		--path="./clusters/homelab" \
+		--prune=true \
+		--interval=10m
