@@ -269,3 +269,5 @@ spec:
   resources:
     - kind: ConfigMap
       name: calico
+    - kind: ConfigMap
+      name: flux

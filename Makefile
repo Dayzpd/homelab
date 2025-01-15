@@ -7,8 +7,7 @@ init-proxmox-capi-provider:
 	@clusterctl init \
 		--config ./clusterctl.yaml \
 		--infrastructure proxmox \
-		--ipam in-cluster \
-		--core cluster-api:v1.6.1
+		--ipam in-cluster
 
 .PHONY: delete-proxmox-capi-provider
 delete-proxmox-capi-provider:
@@ -42,6 +41,12 @@ generate-homelab-cluster:
 		--dry-run=client \
 		--output yaml > capi/homelab/calico-crs.yaml
 	@rm ./templates/calico.yaml
+	@flux install --export > ./templates/flux.yaml
+	@kubectl create cm flux \
+		--from-file=./templates/flux.yaml \
+		--dry-run=client \
+		--output yaml > capi/homelab/flux-crs.yaml
+	@rm ./templates/flux.yaml
 	@clusterctl generate cluster homelab \
 		--target-namespace homelab \
 		--config ./clusterctl.yaml \
@@ -83,10 +88,13 @@ get-capmox-kube-dashboard-token:
 
 .PHONY: bootstrap-homelab-cluster
 bootstrap-homelab-cluster:
-	@kubectl config use-context homelab
-	@flux bootstrap github \
-		--owner=${GITHUB_USER} \
-		--repository=homelab \
+	@kubectl config use-context homelab-admin@homelab
+	@kubectl create secret generic flux-github-auth \
+		--namespace flux-system \
+		--from-literal=username=${GITHUB_USER} \
+		--from-literal=password=${GITHUB_TOKEN}
+	@flux create source git <source-name> \
+		--url=https://github.com/Dayzpd/homelab.git \
 		--branch=master \
-		--path=./clusters/my-cluster \
-		--personal
+		--secret-ref=flux-github-auth \
+		--interval=1m
