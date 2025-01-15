@@ -81,6 +81,12 @@ get-homelab-kubeconfig:
 	@mv ./merged /home/${USER}/.kube/config
 	@rm ./homelab-kubeconfig
 
+.PHONY: delete-homelab-kubeconfig
+delete-homelab-kubeconfig:
+	@kubectl config delete-context homelab-admin@homelab
+	@kubectl config delete-user homelab-admin
+	@kubectl config delete-cluster homelab
+
 .PHONY: get-capmox-kube-dashboard-token
 get-capmox-kube-dashboard-token:
 	@kubectl config use-context capmox
