@@ -45,8 +45,8 @@ kind: Kustomization
 metadata:
   name: flux-capacitor
 spec:
-  dependsOn:
-  - name: ingress-nginx
+  dependsOn: []
+  #- name: ingress-nginx
   interval: 1m0s
   path: ./infrastructure/flux-capacitor/overlays/homelab
   prune: true
