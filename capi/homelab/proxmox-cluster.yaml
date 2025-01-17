@@ -283,5 +283,5 @@ spec:
   - kind: ConfigMap
     name: calico
   - kind: ConfigMap
-    name: flux
+    name: sealed-secrets
   strategy: Reconcile

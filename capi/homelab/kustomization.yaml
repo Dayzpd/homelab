@@ -4,5 +4,5 @@ namespace: homelab
 resources:
 - ./namespace.yaml
 - ./calico-crs.yaml
-- ./flux-crs.yaml
+- ./sealed-secrets-crs.yaml
 - ./proxmox-cluster.yaml

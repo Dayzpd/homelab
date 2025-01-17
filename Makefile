@@ -41,12 +41,12 @@ generate-homelab-cluster:
 		--dry-run=client \
 		--output yaml > capi/homelab/calico-crs.yaml
 	@rm ./templates/calico.yaml
-	@flux install --export > ./templates/flux.yaml
-	@kubectl create cm flux \
-		--from-file=./templates/flux.yaml \
+	@curl -L -o ./templates/sealed-secrets-v0-28-0.yaml -H "User-Agent: curl" https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.28.0/controller.yaml
+	@kubectl create cm sealed-secrets \
+		--from-file=./templates/sealed-secrets-v0-28-0.yaml \
 		--dry-run=client \
-		--output yaml > capi/homelab/flux-crs.yaml
-	@rm ./templates/flux.yaml
+		--output yaml > capi/homelab/sealed-secrets-crs.yaml
+	@rm ./templates/sealed-secrets-v0-28-0.yaml
 	@clusterctl generate cluster homelab \
 		--target-namespace homelab \
 		--config ./clusterctl.yaml \
@@ -65,7 +65,7 @@ apply-homelab-cluster:
 .PHONY: apply-homelab-cluster-dry-run
 diff-homelab-cluster:
 	@kubectl config use-context capmox
-	@kubectl diff -k ./capi/homelab
+	@kubectl diff -k ./capi/homelab || true
 
 .PHONY: delete-homelab-cluster
 delete-homelab-cluster:
@@ -95,19 +95,6 @@ get-capmox-kube-dashboard-token:
 .PHONY: bootstrap-homelab-cluster
 bootstrap-homelab-cluster:
 	@kubectl config use-context homelab-admin@homelab
-	@kubectl create secret generic github-auth \
-		--namespace flux-system \
-		--from-literal=username=${GITHUB_USER} \
-		--from-literal=password=${GITHUB_TOKEN}
-	@flux create source git homelab-repo \
-		--namespace flux-system \
-		--url=https://github.com/Dayzpd/homelab.git \
-		--branch=master \
-		--secret-ref=github-auth \
-		--interval=1m
-	@flux create kustomization homelab-cluster \
-		--namespace flux-system \
-		--source=homelab-repo \
-		--path="./clusters/homelab" \
-		--prune=true \
-		--interval=10m
+	@kubectl apply -k infrastructure/flux/base
+	@kubectl wait --for=condition=established crd/gitrepositories.source.toolkit.fluxcd.io crd/kustomizations.kustomize.toolkit.fluxcd.io
+	@kubectl apply -k infrastructure/flux/overlays/homelab
