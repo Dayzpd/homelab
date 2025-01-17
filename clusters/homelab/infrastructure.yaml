@@ -5,8 +5,7 @@ metadata:
   name: cert-manager
 spec:
   interval: 1m0s
-  path: ./infrastructure/cert-manager/base
-  #path: ./infrastructure/cert-manager/overlays/homelab
+  path: ./infrastructure/cert-manager/overlays/homelab
   prune: true
   sourceRef:
     kind: GitRepository
@@ -46,8 +45,8 @@ kind: Kustomization
 metadata:
   name: flux-capacitor
 spec:
-  dependsOn: []
-  #- name: ingress-nginx
+  dependsOn:
+  - name: ingress-nginx
   interval: 1m0s
   path: ./infrastructure/flux-capacitor/overlays/homelab
   prune: true

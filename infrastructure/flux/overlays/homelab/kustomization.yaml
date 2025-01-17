@@ -1,15 +1,16 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: cert-manager
+namespace: flux-system
 resources:
   - ../../base
-  - cloudflare-token-sealed-secret.yaml
-  - clusterissuer.yaml
+  - github-token-sealed-secret.yaml
+  - git-repository-source.yaml
+  - cluster-kustomization.yaml
 
 secretGenerator:
-  - name: cloudflare-token
+  - name: github-token
     files:
-      - ./cloudflare-token-sealed-secret.yaml
+      - ./github-token-sealed-secret.yaml
     options:
       annotations:
         config.kubernetes.io/local-config: "true"
