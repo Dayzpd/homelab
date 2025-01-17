@@ -19,12 +19,30 @@ done
 
 clusterName=$( kubectl config view --minify -o jsonpath='{.clusters[0].name}' )
 
-sealSecret \
+sealEnvFile \
   --secret-name "cloudflare-token" \
   --namespace "cert-manager" \
   --output "./infrastructure/cert-manager/overlays/$clusterName"
 
-sealSecret \
+sealEnvFile \
   --secret-name "github-token" \
   --namespace "flux-system" \
   --output "./infrastructure/flux/overlays/$clusterName"
+
+sealYamlFile \
+  --secret-name "nfs-nvme-driver-config" \
+  --key "driver-config-file.yaml" \
+  --namespace "democratic-csi" \
+  --output "./infrastructure/democratic-csi/overlays/$clusterName/nfs-nvme"
+
+sealYamlFile \
+  --secret-name "nfs-hdd-media-driver-config" \
+  --key "driver-config-file.yaml" \
+  --namespace "democratic-csi" \
+  --output "./infrastructure/democratic-csi/overlays/$clusterName/nfs-hdd-media"
+
+sealYamlFile \
+  --secret-name "nfs-hdd-nvr-driver-config" \
+  --key "driver-config-file.yaml" \
+  --namespace "democratic-csi" \
+  --output "./infrastructure/democratic-csi/overlays/$clusterName/nfs-hdd-nvr"

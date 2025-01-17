@@ -1,0 +1,130 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nfs-hdd-media
+  namespace: flux-system
+spec:
+  interval: 5m
+  timeout: 15m
+  chart:
+    spec:
+      chart: democratic-csi
+      sourceRef:
+        kind: HelmRepository
+        name: democratic-csi
+        namespace: flux-system
+  releaseName: nfs-hdd-media
+  targetNamespace: democratic-csi
+  values:
+    controller:
+      externalAttacher:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50M
+            ephemeral-storage: 100Mi
+          limits:
+            memory: 100Mi
+            ephemeral-storage: 200Mi
+      externalProvisioner:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50M
+            ephemeral-storage: 100Mi
+          limits:
+            memory: 100M
+            ephemeral-storage: 200Mi
+      externalResizer:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+            ephemeral-storage: 100Mi
+          limits:
+            memory: 100Mi
+            ephemeral-storage: 200Mi
+      externalSnapshotter:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 30Mi
+            ephemeral-storage: 100Mi
+          limits:
+            memory: 100Mi
+            ephemeral-storage: 200Mi
+      driver:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+            ephemeral-storage: 100Mi
+          limits:
+            memory: 100Mi
+            ephemeral-storage: 200Mi
+    csiProxy:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 100Mi
+          ephemeral-storage: 100Mi
+        limits:
+          memory: 100Mi
+          ephemeral-storage: 200Mi
+    csiDriver:
+      name: "nfs-hdd-media"
+    storageClasses:
+    - name: nfs-hdd-media
+      defaultClass: false
+      reclaimPolicy: Delete
+      volumeBindingMode: Immediate
+      allowVolumeExpansion: true
+      parameters:
+        fsType: nfs
+        detachedVolumesFromSnapshots: "false"
+      mountOptions:
+        ["nfsvers=4.2", "nconnect=8", "hard", "noatime", "nodiratime"]
+      secrets:
+        provisioner-secret:
+        controller-publish-secret:
+        node-stage-secret:
+        node-publish-secret:
+        controller-expand-secret:
+  #  volumeSnapshotClasses:
+  #  - name: nfs
+  #    parameters:
+  #      detachedSnapshots: "true"
+    driver:
+      existingConfigSecret: nfs-hdd-media-driver-config
+      config:
+        driver: freenas-api-nfs
+        
+    node:
+      driver:
+        resources:
+          requests:
+            cpu: 30m
+            memory: 100Mi
+            ephemeral-storage: 100Mi
+          limits:
+            memory: 200Mi
+            ephemeral-storage: 200Mi
+      driverRegistrar:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 100Mi
+            ephemeral-storage: 100Mi
+          limits:
+            memory: 200Mi
+            ephemeral-storage: 200Mi
+      cleanup:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 100Mi
+            ephemeral-storage: 100Mi
+          limits:
+            memory: 200Mi
+            ephemeral-storage: 200Mi
