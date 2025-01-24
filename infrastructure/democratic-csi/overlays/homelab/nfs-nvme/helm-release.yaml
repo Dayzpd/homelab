@@ -16,6 +16,8 @@ spec:
         namespace: flux-system
   releaseName: nfs-nvme
   targetNamespace: democratic-csi
+  upgrade:
+    force: true
   values:
     controller:
       externalAttacher:
