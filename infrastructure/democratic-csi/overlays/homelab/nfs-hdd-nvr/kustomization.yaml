@@ -2,12 +2,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - nfs-hdd-nvr-driver-config-sealed-secret.yaml
-  - helm-release.yaml
+  - nfs-hdd-nvr-csi.yaml
 
-#secretGenerator:
-#  - name: nfs-hdd-nvr-driver-config
-#    files:
-#      - ./nfs-hdd-nvr-driver-config-sealed-secret.yaml
-#    options:
-#      annotations:
-#        config.kubernetes.io/local-config: "true"
+secretGenerator:
+  - name: nfs-hdd-nvr-driver-config
+    files:
+      - ./nfs-hdd-nvr-driver-config-sealed-secret.yaml
+    options:
+      annotations:
+        config.kubernetes.io/local-config: "true"

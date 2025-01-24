@@ -2,12 +2,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - nfs-nvme-driver-config-sealed-secret.yaml
-  - helm-release.yaml
+  - nfs-nvme-csi.yaml
 
-#secretGenerator:
-#  - name: nfs-nvme-driver-config
-#    files:
-#      - ./nfs-nvme-driver-config-sealed-secret.yaml
-#    options:
-#      annotations:
-#        config.kubernetes.io/local-config: "true"
+secretGenerator:
+  - name: nfs-nvme-driver-config
+    files:
+      - ./nfs-nvme-driver-config-sealed-secret.yaml
+    options:
+      annotations:
+        config.kubernetes.io/local-config: "true"
