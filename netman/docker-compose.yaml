@@ -1,0 +1,141 @@
+services:
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager
+    labels:
+      - docker-volume-backup.stop-during-backup=false
+    restart: unless-stopped
+    ports:
+      # These ports are in format <host-port>:<container-port>
+      - '${NGINX_PROXY_MANAGER_HTTP_PORT}:80' # Public HTTP Port
+      - '${NGINX_PROXY_MANAGER_HTTPS_PORT}:443' # Public HTTPS Port
+      - '${NGINX_PROXY_MANAGER_ADMIN_PORT}:81' # Admin Web Port
+      # Add any other Stream port you want to expose
+      # - '21:21' # FTP
+    environment:
+      INITIAL_ADMIN_EMAIL: ${NGINX_PROXY_MANAGER_ADMIN_EMAIL}
+      INITIAL_ADMIN_PASSWORD: ${NGINX_PROXY_MANAGER_ADMIN_PASSWD}
+      DB_SQLITE_FILE: "/data/database.sqlite"
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
+    volumes:
+      - nginx-proxy-manager-data:/data
+      - nginx-proxy-manager-letsencrypt:/etc/letsencrypt
+
+  passbolt:
+    image: passbolt/passbolt:latest-ce
+    container_name: passbolt
+    labels:
+      - docker-volume-backup.stop-during-backup=true
+    restart: unless-stopped
+    depends_on:
+      - passbolt-db
+    environment:
+      APP_FULL_BASE_URL: https://passbolt.local.zachary.day
+      DATASOURCES_DEFAULT_HOST: "passbolt-db"
+      DATASOURCES_DEFAULT_DATABASE: ${PASSBOLT_DB_DATABASE}
+      DATASOURCES_DEFAULT_USERNAME: ${PASSBOLT_DB_USERNAME}
+      DATASOURCES_DEFAULT_PASSWORD: ${PASSBOLT_DB_PASSWORD}
+    volumes:
+      - passbolt-gpg:/etc/passbolt/gpg
+      - passbolt-jwt:/etc/passbolt/jwt
+    command:
+      [
+        "/usr/bin/wait-for.sh",
+        "-t",
+        "0",
+        "passbolt-db:3306",
+        "--",
+        "/docker-entrypoint.sh",
+      ]
+    ports:
+      - 8080:80
+      - 8443:443
+
+  passbolt-db:
+    image: mariadb:10.11
+    container_name: passbolt-db
+    labels:
+      - docker-volume-backup.stop-during-backup=true
+    restart: unless-stopped
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: ${PASSBOLT_DB_RANDOM_ROOT_PASSWD}
+      MYSQL_DATABASE: ${PASSBOLT_DB_DATABASE}
+      MYSQL_USER: ${PASSBOLT_DB_USERNAME}
+      MYSQL_PASSWORD: ${PASSBOLT_DB_PASSWORD}
+    volumes:
+      - passbolt-db:/var/lib/mysql
+    ports:
+      - 3306:3306
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    labels:
+      - docker-volume-backup.stop-during-backup=false
+    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+    ports:
+      - "${PIHOLE_DNS_PORT}:53/tcp"
+      - "${PIHOLE_DNS_PORT}:53/udp"
+      - "${PIHOLE_DHCP_PORT}:67/udp" # Only required if you are using Pi-hole as your DHCP server
+      - "8081:80/tcp"
+    environment:
+      TZ: ${TIMEZONE}
+      WEBPASSWORD: ${PIHOLE_PASSWORD}
+    volumes:
+      - pihole-data:/etc/pihole
+      - pihole-dnsmasq:/etc/dnsmasq.d
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    cap_add:
+      - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
+    restart: unless-stopped
+
+  unifi:
+    image: jacobalberty/unifi:latest
+    container_name: unifi
+    labels:
+      - docker-volume-backup.stop-during-backup=true
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+      - "9443:8443"
+      - "${UNIFI_STUN_PORT}:3478/udp"
+      - "${UNIFI_SPEEDTEST_PORT}:6789/tcp"
+      - "${UNIFI_DEVICE_DISCOVERY_PORT}:10001/udp"
+    environment:
+      TZ: ${TIMEZONE}
+    volumes:
+      - unifi-data:/unifi
+    user: unifi
+
+  backup:
+    image: offen/docker-volume-backup:latest
+    container_name: backup
+    restart: always
+    environment:
+      BACKUP_CRON_EXPRESSION: "0 10 * * 0"
+    volumes:
+      - nginx-proxy-manager-data:/backup/nginx-proxy-manager-data-backup:ro
+      - nginx-proxy-manager-letsencrypt:/backup/nginx-proxy-manager-letsencrypt-backup:ro
+      - passbolt-db:/backup/passbolt-db-backup:ro
+      - passbolt-gpg:/backup/passbolt-gpg-backup:ro
+      - passbolt-jwt:/backup/passbolt-jwt-backup:ro
+      - pihole-data:/backup/pihole-data-backup:ro
+      - pihole-dnsmasq:/backup/pihole-dnsmasq-backup:ro
+      - unifi-data:/backup/unifi-data-backup:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${BACKUPS_DIR}:/archive
+
+networks:
+  default:
+    name: netman
+
+volumes:
+  nginx-proxy-manager-data:
+  nginx-proxy-manager-letsencrypt:
+  passbolt-db:
+  passbolt-gpg:
+  passbolt-jwt:
+  pihole-data:
+  pihole-dnsmasq:
+  unifi-data:
