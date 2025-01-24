@@ -91,6 +91,22 @@ spec:
         node-stage-secret:
         node-publish-secret:
         controller-expand-secret:
+    - name: nfs-hdd-media-retain
+      defaultClass: false
+      reclaimPolicy: Retain
+      volumeBindingMode: Immediate
+      allowVolumeExpansion: true
+      parameters:
+        fsType: nfs
+        detachedVolumesFromSnapshots: "false"
+      mountOptions:
+        ["nfsvers=4.2", "nconnect=8", "hard", "noatime", "nodiratime"]
+      secrets:
+        provisioner-secret:
+        controller-publish-secret:
+        node-stage-secret:
+        node-publish-secret:
+        controller-expand-secret:
   #  volumeSnapshotClasses:
   #  - name: nfs
   #    parameters:

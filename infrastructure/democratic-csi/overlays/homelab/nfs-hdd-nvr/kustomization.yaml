@@ -3,3 +3,11 @@ kind: Kustomization
 resources:
   - nfs-hdd-nvr-driver-config-sealed-secret.yaml
   - helm-release.yaml
+
+#secretGenerator:
+#  - name: nfs-hdd-nvr-driver-config
+#    files:
+#      - ./nfs-hdd-nvr-driver-config-sealed-secret.yaml
+#    options:
+#      annotations:
+#        config.kubernetes.io/local-config: "true"

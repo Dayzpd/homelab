@@ -3,3 +3,11 @@ kind: Kustomization
 resources:
   - nfs-nvme-driver-config-sealed-secret.yaml
   - helm-release.yaml
+
+#secretGenerator:
+#  - name: nfs-nvme-driver-config
+#    files:
+#      - ./nfs-nvme-driver-config-sealed-secret.yaml
+#    options:
+#      annotations:
+#        config.kubernetes.io/local-config: "true"

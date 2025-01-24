@@ -3,3 +3,11 @@ kind: Kustomization
 resources:
   - nfs-hdd-media-driver-config-sealed-secret.yaml
   - helm-release.yaml
+
+#secretGenerator:
+#  - name: nfs-hdd-media-driver-config
+#    files:
+#      - ./nfs-hdd-media-driver-config-sealed-secret.yaml
+#    options:
+#      annotations:
+#        config.kubernetes.io/local-config: "true"
