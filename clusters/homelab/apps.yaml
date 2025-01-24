@@ -6,8 +6,7 @@ metadata:
 spec:
   dependsOn:
   - name: ingress-nginx
-  - name: nfs-nvme
-  - name: nfs-hdd-media
+  - name: democratic-csi
   interval: 1m0s
   path: ./apps/media-server/overlays/homelab
   prune: true

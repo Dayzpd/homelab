@@ -46,3 +46,8 @@ sealYamlFile \
   --key "driver-config-file.yaml" \
   --namespace "democratic-csi" \
   --output "./infrastructure/democratic-csi/overlays/$clusterName/nfs-hdd-nvr"
+
+sealEnvFile \
+  --secret-name "openvpn-credentials" \
+  --namespace "media-server" \
+  --output "./apps/media-server/overlays/$clusterName"
