@@ -1,0 +1,129 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: qbittorrent-config
+spec:
+  storageClassName: nfs-nvme-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qbittorrent
+  template:
+    metadata:
+      labels:
+        app: qbittorrent
+    spec:
+      containers:
+        - name: gluetun
+          image: qmcgaw/gluetun
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "200m"
+            limits:
+              memory: "256Mi"
+              cpu: "1"
+          env:
+            - name: VPN_TYPE
+              value: openvpn
+            - name: VPN_SERVICE_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-credentials
+                  key: provider
+            - name: SERVER_REGIONS
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-credentials
+                  key: regions
+            - name: OPENVPN_ENDPOINT_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-credentials
+                  key: port
+            - name: OPENVPN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-credentials
+                  key: username
+            - name: OPENVPN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-credentials
+                  key: password
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+          ports:
+            - containerPort: 8888 # Optional: For health checks
+              name: gluetun-health
+          volumeMounts:
+            - name: dev-net-tun
+              mountPath: /dev/net/tun
+              readOnly: true
+        - name: qbittorrent
+          image: linuxserver/qbittorrent
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            - name: PUID
+              value: "1000" # User ID
+            - name: PGID
+              value: "1000" # Group ID
+            - name: WEBUI_PORT
+              value: "8080"
+          ports:
+            - containerPort: 8080
+              name: qbittorrent-ui
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: downloads
+              mountPath: /downloads
+      volumes:
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+        - name: config
+          persistentVolumeClaim:
+            claimName: qbittorrent-config
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: media
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: qbittorrent
+  name: qbittorrent
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: qbittorrent-ui # Name of the containerPort
+  selector:
+    app: qbittorrent
+  type: ClusterIP
