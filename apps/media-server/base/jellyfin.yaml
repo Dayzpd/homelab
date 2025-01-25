@@ -56,7 +56,7 @@ spec:
         - name: client-discovery
           containerPort: 7359
         - name: service-discovery
-          containerPort: 7359
+          containerPort: 1900
         volumeMounts:
         - name: config
           mountPath: /config
