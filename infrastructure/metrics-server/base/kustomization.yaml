@@ -3,4 +3,16 @@ kind: Kustomization
 resources:
 - ./metrics-server-v0-7-2.yaml
 
+patches:
+- patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/args/-
+      value: "--kubelet-insecure-tls"
+  target:
+    kind: Deployment
+    group: apps
+    version: v1
+    name: metrics-server
+    namespace: kube-system
+
 # curl -L -o metrics-server-v0-7-2.yaml -H "User-Agent: my-curl-agent" https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.7.2/components.yaml
