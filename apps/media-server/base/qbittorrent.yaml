@@ -41,47 +41,19 @@ spec:
           envFrom:
           - secretRef:
               name: vpn-credentials
-#          env:
-#            - name: VPN_TYPE
-#              value: openvpn
-#            - name: VPN_SERVICE_PROVIDER
-#              valueFrom:
-#                secretKeyRef:
-#                  name: openvpn-credentials
-#                  key: provider
-#            - name: SERVER_CITIES
-#              valueFrom:
-#                secretKeyRef:
-#                  name: openvpn-credentials
-#                  key: cities
-#            - name: OPENVPN_ENDPOINT_PORT
-#              valueFrom:
-#                secretKeyRef:
-#                  name: openvpn-credentials
-#                  key: port
-#            - name: OPENVPN_USER
-#              valueFrom:
-#                secretKeyRef:
-#                  name: openvpn-credentials
-#                  key: username
-#            - name: OPENVPN_PASSWORD
-#              valueFrom:
-#                secretKeyRef:
-#                  name: openvpn-credentials
-#                  key: password
           securityContext:
             capabilities:
               add:
                 - NET_ADMIN
           ports:
-            - containerPort: 8888 # Optional: For health checks
+            - containerPort: 8888
               name: gluetun-health
           volumeMounts:
             - name: dev-net-tun
               mountPath: /dev/net/tun
               readOnly: true
         - name: qbittorrent
-          image: linuxserver/qbittorrent
+          image: linuxserver/qbittorrent # https://docs.linuxserver.io/images/docker-qbittorrent
           resources:
             requests:
               cpu: 100m
@@ -91,9 +63,9 @@ spec:
               memory: 1Gi
           env:
             - name: PUID
-              value: "1000" # User ID
+              value: "1000"
             - name: PGID
-              value: "1000" # Group ID
+              value: "1000"
             - name: WEBUI_PORT
               value: "8080"
           ports:
@@ -128,7 +100,7 @@ spec:
     - name: http
       port: 8080
       protocol: TCP
-      targetPort: qbittorrent-ui # Name of the containerPort
+      targetPort: qbittorrent-ui
   selector:
     app: qbittorrent
   type: ClusterIP

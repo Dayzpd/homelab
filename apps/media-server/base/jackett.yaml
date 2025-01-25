@@ -1,0 +1,78 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jackett-config
+spec:
+  storageClassName: nfs-nvme-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jackett
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: jackett
+  template:
+    metadata:
+      labels:
+        app: jackett
+    spec:
+      containers:
+        - name: jackett
+          image: linuxserver/jackett # https://docs.linuxserver.io/images/docker-jackett
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: WEBUI_PORT
+              value: "8080"
+          ports:
+            - containerPort: 9117
+              name: jackett-ui
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: downloads
+              mountPath: /downloads
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: jackett-config
+        - name: downloads
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: jackett
+  name: jackett
+spec:
+  ports:
+    - name: http
+      port: 9117
+      protocol: TCP
+      targetPort: jackett-ui
+  selector:
+    app: jackett
+  type: ClusterIP
