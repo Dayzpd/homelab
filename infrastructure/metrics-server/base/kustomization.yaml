@@ -1,0 +1,6 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ./metrics-server-v0-7-2.yaml
+
+# curl -L -o metrics-server-v0-7-2.yaml -H "User-Agent: my-curl-agent" https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.7.2/components.yaml
