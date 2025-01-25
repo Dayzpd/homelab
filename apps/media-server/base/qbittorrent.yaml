@@ -46,11 +46,11 @@ spec:
                 secretKeyRef:
                   name: openvpn-credentials
                   key: provider
-#            - name: SERVER_REGIONS
-#              valueFrom:
-#                secretKeyRef:
-#                  name: openvpn-credentials
-#                  key: regions
+            - name: SERVER_CITIES
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-credentials
+                  key: cities
             - name: OPENVPN_ENDPOINT_PORT
               valueFrom:
                 secretKeyRef:

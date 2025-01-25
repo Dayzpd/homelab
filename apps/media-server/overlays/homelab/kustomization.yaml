@@ -24,11 +24,6 @@ patches:
       value:
         name: TZ
         value: America/Chicago
-    - op: add
-      path: /spec/template/spec/containers/0/env/-
-      value:
-        name: SERVER_HOSTNAMES
-        value: "dfw-414.whiskergalaxy.com,dfw-86.whiskergalaxy.com"
   target:
     kind: Deployment
     group: apps
