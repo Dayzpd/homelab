@@ -38,34 +38,37 @@ spec:
             limits:
               cpu: "2"
               memory: 512Mi
-          env:
-            - name: VPN_TYPE
-              value: openvpn
-            - name: VPN_SERVICE_PROVIDER
-              valueFrom:
-                secretKeyRef:
-                  name: openvpn-credentials
-                  key: provider
-            - name: SERVER_CITIES
-              valueFrom:
-                secretKeyRef:
-                  name: openvpn-credentials
-                  key: cities
-            - name: OPENVPN_ENDPOINT_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: openvpn-credentials
-                  key: port
-            - name: OPENVPN_USER
-              valueFrom:
-                secretKeyRef:
-                  name: openvpn-credentials
-                  key: username
-            - name: OPENVPN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: openvpn-credentials
-                  key: password
+          envFrom:
+          - secretRef:
+              name: vpn-credentials
+#          env:
+#            - name: VPN_TYPE
+#              value: openvpn
+#            - name: VPN_SERVICE_PROVIDER
+#              valueFrom:
+#                secretKeyRef:
+#                  name: openvpn-credentials
+#                  key: provider
+#            - name: SERVER_CITIES
+#              valueFrom:
+#                secretKeyRef:
+#                  name: openvpn-credentials
+#                  key: cities
+#            - name: OPENVPN_ENDPOINT_PORT
+#              valueFrom:
+#                secretKeyRef:
+#                  name: openvpn-credentials
+#                  key: port
+#            - name: OPENVPN_USER
+#              valueFrom:
+#                secretKeyRef:
+#                  name: openvpn-credentials
+#                  key: username
+#            - name: OPENVPN_PASSWORD
+#              valueFrom:
+#                secretKeyRef:
+#                  name: openvpn-credentials
+#                  key: password
           securityContext:
             capabilities:
               add:
