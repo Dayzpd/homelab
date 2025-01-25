@@ -55,8 +55,11 @@ spec:
           containerPort: 8920
         - name: client-discovery
           containerPort: 7359
+          protocol: UDP
         - name: service-discovery
           containerPort: 1900
+          protocol: UDP
+          
         volumeMounts:
         - name: config
           mountPath: /config
