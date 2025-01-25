@@ -28,7 +28,7 @@ patches:
       path: /spec/template/spec/containers/0/env/-
       value:
         name: SERVER_HOSTNAMES
-        value: "dfw-414.windscribe.com,dfw-86.windscribe.com"
+        value: "dfw-414.whiskergalaxy.com,dfw-86.whiskergalaxy.com"
   target:
     kind: Deployment
     group: apps
