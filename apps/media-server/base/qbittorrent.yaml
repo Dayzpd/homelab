@@ -33,11 +33,11 @@ spec:
           image: qmcgaw/gluetun
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "200m"
+              cpu: 200m
+              memory: 256Mi
             limits:
-              memory: "256Mi"
-              cpu: "1"
+              cpu: "2"
+              memory: 512Mi
           env:
             - name: VPN_TYPE
               value: openvpn
@@ -46,11 +46,11 @@ spec:
                 secretKeyRef:
                   name: openvpn-credentials
                   key: provider
-            - name: SERVER_REGIONS
-              valueFrom:
-                secretKeyRef:
-                  name: openvpn-credentials
-                  key: regions
+#            - name: SERVER_REGIONS
+#              valueFrom:
+#                secretKeyRef:
+#                  name: openvpn-credentials
+#                  key: regions
             - name: OPENVPN_ENDPOINT_PORT
               valueFrom:
                 secretKeyRef:
@@ -81,11 +81,11 @@ spec:
           image: linuxserver/qbittorrent
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              cpu: 100m
+              memory: 512Mi
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              cpu: 500m
+              memory: 1Gi
           env:
             - name: PUID
               value: "1000" # User ID
