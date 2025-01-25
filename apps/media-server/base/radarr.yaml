@@ -1,0 +1,119 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: radarr-config
+spec:
+  storageClassName: nfs-nvme-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: radarr
+  name: radarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: radarr
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: radarr
+    spec:
+      containers:
+      - image: lscr.io/linuxserver/radarr
+        name: radarr
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        env:
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
+        ports:
+          - containerPort: 7878
+            name: http
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: downloads
+          mountPath: /downloads
+        - name: movies
+          mountPath: /movies
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: radarr-config
+      - name: downloads
+        persistentVolumeClaim:
+          claimName: downloads
+      - name: movies
+        persistentVolumeClaim:
+          claimName: movies
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: radarr
+  name: radarr
+spec:
+  ports:
+  - name: http
+    port: 7878
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: radarr
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  creationTimestamp: null
+  name: radarr
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    #nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - radarr.local.zachary.day
+    secretName: radarr-ingress-tls
+  rules:
+  - host: radarr.local.zachary.day
+    http:
+      paths:
+      - backend:
+          service:
+            name: radarr
+            port:
+              name: http
+        path: /
+        pathType: Prefix
+status:
+  loadBalancer: {}

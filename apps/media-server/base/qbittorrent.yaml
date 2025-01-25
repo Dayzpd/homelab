@@ -9,7 +9,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 10Gi
 
 ---
 apiVersion: apps/v1
@@ -53,7 +53,7 @@ spec:
               mountPath: /dev/net/tun
               readOnly: true
         - name: qbittorrent
-          image: linuxserver/qbittorrent # https://docs.linuxserver.io/images/docker-qbittorrent
+          image: lscr.io/linuxserver/qbittorrent # https://docs.linuxserver.io/images/docker-qbittorrent
           resources:
             requests:
               cpu: 100m
@@ -70,7 +70,7 @@ spec:
               value: "8080"
           ports:
             - containerPort: 8080
-              name: qbittorrent-ui
+              name: http
           volumeMounts:
             - name: config
               mountPath: /config
@@ -86,7 +86,7 @@ spec:
             claimName: qbittorrent-config
         - name: downloads
           persistentVolumeClaim:
-            claimName: media
+            claimName: downloads
 
 ---
 apiVersion: v1
@@ -100,7 +100,37 @@ spec:
     - name: http
       port: 8080
       protocol: TCP
-      targetPort: qbittorrent-ui
+      targetPort: http
   selector:
     app: qbittorrent
   type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  creationTimestamp: null
+  name: qbittorrent
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    #nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - qbittorrent.local.zachary.day
+    secretName: qbittorrent-ingress-tls
+  rules:
+  - host: qbittorrent.local.zachary.day
+    http:
+      paths:
+      - backend:
+          service:
+            name: qbittorrent
+            port:
+              name: http
+        path: /
+        pathType: Prefix
+status:
+  loadBalancer: {}

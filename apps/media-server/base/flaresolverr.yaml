@@ -1,0 +1,93 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: flaresolverr
+  name: flaresolverr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flaresolverr
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: flaresolverr
+    spec:
+      containers:
+      - image: ghcr.io/flaresolverr/flaresolverr
+        name: flaresolverr
+        env:
+        - name: LOG_LEVEL
+          value: info
+        - name: LOG_HTML
+          value: false
+        - name: CAPTCHA_SOLVER
+          value: none
+        - name: LANG
+          value: en_US
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        ports:
+          - containerPort: 8191
+            name: http
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: flaresolverr
+  name: flaresolverr
+spec:
+  ports:
+  - name: http
+    port: 8191
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: flaresolverr
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  creationTimestamp: null
+  name: flareresolverr
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    #nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - flareresolverr.local.zachary.day
+    secretName: flareresolverr-ingress-tls
+  rules:
+  - host: flareresolverr.local.zachary.day
+    http:
+      paths:
+      - backend:
+          service:
+            name: flareresolverr
+            port:
+              name: http
+        path: /
+        pathType: Prefix
+status:
+  loadBalancer: {}

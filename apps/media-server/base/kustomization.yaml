@@ -6,3 +6,8 @@ resources:
   - pvc.yaml
   - jackett.yaml
   - qbittorrent.yaml
+  - flareresolverr.yaml
+  - prowlarr.yaml
+  - radarr.yaml
+  - sonarr.yaml
+  - jellyfin.yaml

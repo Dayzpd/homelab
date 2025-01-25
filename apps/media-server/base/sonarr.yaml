@@ -1,0 +1,119 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sonarr-config
+spec:
+  storageClassName: nfs-nvme-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: sonarr
+  name: sonarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarr
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: sonarr
+    spec:
+      containers:
+      - image: lscr.io/linuxserver/sonarr
+        name: sonarr
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        env:
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
+        ports:
+          - containerPort: 8989
+            name: http
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: downloads
+          mountPath: /downloads
+        - name: tvshows
+          mountPath: /tv
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: sonarr-config
+      - name: downloads
+        persistentVolumeClaim:
+          claimName: downloads
+      - name: tvshows
+        persistentVolumeClaim:
+          claimName: tvshows
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: sonarr
+  name: sonarr
+spec:
+  ports:
+  - name: http
+    port: 8989
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: sonarr
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  creationTimestamp: null
+  name: sonarr
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    #nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - sonarr.local.zachary.day
+    secretName: sonarr-ingress-tls
+  rules:
+  - host: sonarr.local.zachary.day
+    http:
+      paths:
+      - backend:
+          service:
+            name: sonarr
+            port:
+              name: http
+        path: /
+        pathType: Prefix
+status:
+  loadBalancer: {}
