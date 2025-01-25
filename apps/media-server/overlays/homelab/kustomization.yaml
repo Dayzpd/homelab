@@ -19,6 +19,11 @@ patches:
       value:
         name: DNS_ADDRESS
         value: 10.255.255.1
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: TZ
+        value: America/Chicago
   target:
     kind: Deployment
     group: apps
