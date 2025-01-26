@@ -115,8 +115,8 @@ metadata:
   name: jellyfin
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    #nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 spec:
   ingressClassName: nginx
   tls:
@@ -131,7 +131,7 @@ spec:
           service:
             name: jellyfin
             port:
-              name: https
+              name: http
         path: /
         pathType: Prefix
 status:
