@@ -114,8 +114,9 @@ metadata:
   name: qbittorrent
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt"
-    #nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    #nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
 spec:
   ingressClassName: nginx
   tls:
@@ -133,5 +134,3 @@ spec:
               name: http
         path: /
         pathType: Prefix
-status:
-  loadBalancer: {}
