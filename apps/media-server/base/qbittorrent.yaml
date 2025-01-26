@@ -131,6 +131,6 @@ spec:
           service:
             name: qbittorrent
             port:
-              name: http
+              number: 8080
         path: /
         pathType: Prefix
