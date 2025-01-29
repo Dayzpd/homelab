@@ -12,9 +12,6 @@ patches:
     - op: add
       path: /spec/loadBalancerIP
       value: 10.202.69.3
-    - op: add
-      path: /spec/externalTrafficPolicy
-      value: Local
   target:
     kind: Service
     version: v1
