@@ -23,7 +23,7 @@ patches:
 - patch: |-
     - op: add
       path: /spec/template/spec/containers/0/args/-
-      value: "--report-node-internal-ip=false"
+      value: "--report-node-internal-ip-address=false"
   target:
     kind: Deployment
     group: apps
