@@ -58,9 +58,7 @@ spec:
           limits:
             cpu: 200m
             memory: 512Mi
-        envFrom:
-        - secretRef:
-            name: pihole-credentials
+        envFrom: []
         args:
         - --source=service
         - --source=ingress
