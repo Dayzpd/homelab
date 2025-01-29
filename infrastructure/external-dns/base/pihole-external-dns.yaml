@@ -60,7 +60,7 @@ spec:
             memory: 512Mi
         envFrom:
         - secretRef:
-            name: pihole-password
+            name: pihole-credentials
         args:
         - --source=service
         - --source=ingress
