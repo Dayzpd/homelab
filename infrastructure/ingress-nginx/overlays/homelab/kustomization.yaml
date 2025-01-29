@@ -13,7 +13,7 @@ patches:
       path: /spec/loadBalancerIP
       value: 10.202.69.3
     - op: add
-      path /spec/externalTrafficPolicy
+      path: /spec/externalTrafficPolicy
       value: Local
   target:
     kind: Service
