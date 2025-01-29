@@ -5,3 +5,5 @@ resources:
 - namespace.yaml
 - pihole-external-dns.yaml
 
+configurations:
+  - ./sealed-secrets-config.yaml
